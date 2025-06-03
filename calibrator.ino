@@ -1,15 +1,12 @@
+
 // MPU-6050 Short Example Sketch
 //www.elegoo.com
 //2016.12.9
 
 #include<Wire.h>
-const int sampleRateHz = 16;
-const int sampleDuration = 8;
+const int sampleRateHz = 20;
+const int sampleDuration = 2;
 const int numSamples = sampleRateHz * sampleDuration;
-
-const int calx = 201;
-const int caly = 5960;
-const int calz = -14672;
 
 bool dumped = false;
 
@@ -39,24 +36,26 @@ void setup(){
     AcY=Wire.read()<<8|Wire.read();  // 0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
     AcZ=Wire.read()<<8|Wire.read();  // 0x3F (ACCEL_ZOUT_H) & 0x40 (ACCEL_ZOUT_L)
     data[i].timestamp = millis();
-    data[i].ax = AcX - calx;
-    data[i].ay = AcY - caly;
-    data[i].az = AcZ - calz;
+    data[i].ax = AcX;
+    data[i].ay = AcY;
+    data[i].az = AcZ;
     delay(1000 / sampleRateHz);
   }
 }
 void loop(){
   if(Serial && !dumped) {
-    Serial.println("time(ms),ax_raw,ay_raw,az_raw");
+    long sx = 0, sy = 0, sz = 0;
     for(int i = 0; i < numSamples; i++) {
-      Serial.print(data[i].timestamp);
-      Serial.print(",");
-      Serial.print(data[i].ax);
-      Serial.print(",");
-      Serial.print(data[i].ay);
-      Serial.print(",");
-      Serial.println(data[i].az);
+      sx += data[i].ax;
+      sy += data[i].ay;
+      sz += data[i].az;
     }
+    Serial.println("calx, caly, calz");
+    Serial.print(sx / numSamples);
+    Serial.print(",");
+    Serial.print(sy / numSamples);
+    Serial.print(",");
+    Serial.println(sz / numSamples);
     dumped = true;
   }
 }
